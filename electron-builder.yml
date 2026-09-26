@@ -1,0 +1,26 @@
+appId: com.axialforge.bracket
+productName: Bracket
+directories:
+  output: dist
+files:
+  - app/**/*
+  - kit/**/*
+  - package.json
+  - "!kit/python/**"
+  - "!kit/ops/**"
+  - "!kit/test/**"
+  - "!app/test/**"
+publish:
+  provider: github
+  owner: AxialForge
+win:
+  target:
+    - nsis
+  icon: build/icon.ico
+nsis:
+  # A one-click installer has no wizard, so the silent update has none either (see CONVENTIONS.md).
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+  artifactName: ${name}-${version}-setup.${ext}
+  deleteAppDataOnUninstall: false

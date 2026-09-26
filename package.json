@@ -1,0 +1,31 @@
+{
+  "name": "bracket",
+  "productName": "Bracket",
+  "version": "0.1.0",
+  "description": "Template and vendored kit for AxialForge apps: one core, a web shell for a Raspberry Pi behind Caddy and an Electron desktop shell, with the shared security model, themes, cards and the editable dashboard.",
+  "main": "app/electron/main.js",
+  "author": "AxialForge",
+  "license": "MIT",
+  "private": true,
+  "engines": { "node": ">=22.5" },
+  "scripts": {
+    "start": "electron .",
+    "web": "node app/server/server.js",
+    "dev": "node app/server/server.js --data=.devdata --port=8090",
+    "test": "node kit/test/kit.test.js && node app/test/app.test.js",
+    "pack:server": "node kit/ops/pack-server.js",
+    "build:win": "electron-builder --win --x64",
+    "screenshots": "electron . --profile=.devdata-desktop --screenshots=.shots",
+    "new": "node tools/new-app.js",
+    "kit:upgrade": "node tools/kit-upgrade.js",
+    "icons": "node tools/make-icon.js"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  },
+  "repository": { "type": "git", "url": "https://github.com/AxialForge/bracket.git" }
+}

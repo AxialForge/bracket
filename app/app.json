@@ -1,0 +1,9 @@
+{
+  "name": "Bracket",
+  "slug": "bracket",
+  "tagline": "The starter app every Bracket project begins as",
+  "repo": "https://github.com/AxialForge/bracket",
+  "port": 8090,
+  "bridge": "api",
+  "shells": ["web", "desktop"]
+}
