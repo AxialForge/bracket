@@ -4,6 +4,14 @@
 const { $, $$, esc, tile, linkTile, makeTable, searchToolbar, toast, openModal, closeModal, fmtDate, fmtTime, fmtAgo, fmtN, store, RANGE_LABEL, isAdmin, views, pages, sections } = UI;
 const api = window.api;
 
+// ---------- glossary: this app's own terms (the kit ships the System and Security ones) ----------
+// Mark a term anywhere with UI.term(key, text): hover shows `short`, a click opens the full entry.
+Glossary.add({
+  sample: { term: 'Sample', short: 'One value the background job records every 30 seconds.',
+    long: 'The starter app records a sample so the dashboard has something to chart. A real app would measure something: a temperature, a queue length, a speed test.\n\nOld samples are deleted after the number of days set under Settings.',
+    healthy: 'A new sample every 30 seconds.', fix: 'No new samples: the job stopped. Check the [[uptime|app uptime]] and the Log page.', related: ['uptime'] },
+});
+
 // ---------- dashboard: the catalog of cards this app offers ---------------------------------------
 const dayLabel = (ms) => new Date(ms).toLocaleDateString([], { month: 'short', day: 'numeric' });
 Dash.mount({
@@ -13,7 +21,7 @@ Dash.mount({
   catalog: [
     { type: 'notes', group: 'Status', label: 'Notes', help: 'How many notes exist and how many are open', sizes: ['s', 'm'], def: 's', guest: true, render: ({ d }) => linkTile('#notes', tile('', 'Notes', d.notes.total, `${d.notes.open} open · ${d.notes.today} added today`)) },
     { type: 'open', group: 'Status', label: 'Open notes', help: 'Notes not marked done, coloured by your thresholds', sizes: ['s', 'm'], def: 's', rule: { warn: 5, bad: 10 }, guest: true, render: ({ d, rule }) => linkTile('#notes', tile(Cards.colorFor(d.notes.open, rule), 'Open notes', d.notes.open, 'not yet done')) },
-    { type: 'sample', group: 'Status', label: 'Latest sample', help: 'The value the background job recorded last', sizes: ['s', 'm'], def: 's', rule: { warn: 80, bad: 95 }, guest: true, render: ({ d, rule }) => tile(Cards.colorFor(d.last && d.last.value, rule), 'Latest sample', d.last ? d.last.value : '—', d.last ? fmtAgo(d.last.ts) : 'no samples yet', 'tSample') },
+    { type: 'sample', group: 'Status', label: 'Latest sample', help: 'The value the background job recorded last', sizes: ['s', 'm'], def: 's', rule: { warn: 80, bad: 95 }, guest: true, render: ({ d, rule }) => tile(Cards.colorFor(d.last && d.last.value, rule), UI.term('sample', 'Latest sample'), d.last ? d.last.value : '—', d.last ? fmtAgo(d.last.ts) : 'no samples yet', 'tSample') },
     { type: 'chart_samples', group: 'Charts', label: 'Samples', help: 'The recorded value over the period', sizes: ['m', 'l', 'xl'], def: 'l', period: true, guest: true, render: async ({ S, range }) => { const s = await S(range); return Cards.series([{ name: 'Average', color: 'var(--accent)', points: s.points.map(p => ({ t: p.t, y: p.v })) }, { name: 'Peak', color: 'var(--warn)', points: s.points.map(p => ({ t: p.t, y: p.vmax })) }], `Samples (${RANGE_LABEL[range]})`, { fmt: v => Math.round(v), from: s.from, to: s.to, empty: 'No samples yet; the job records one every 30 seconds' }); } },
     { type: 'chart_notes', group: 'Charts', label: 'Notes per day', help: 'Notes created per day, last 30 days', sizes: ['m', 'l', 'xl'], def: 'l', guest: true, render: ({ d }) => Cards.columns(d.perDay.map(p => ({ x: dayLabel(p.day), values: [p.n] })), 'Notes per day (30 days)', { sets: [{ name: 'Notes', color: 'var(--accent2)' }], empty: 'No notes yet' }) },
     { type: 'tags', group: 'Charts', label: 'Notes by tag', help: 'Share of notes per tag', sizes: ['m', 'l', 'xl'], def: 'l', guest: true, render: ({ d }) => Cards.bars(d.notes.byTag.map(t => ({ k: t.k, n: t.n })), 'Notes by tag', { drill: false }) },

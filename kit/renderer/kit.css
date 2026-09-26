@@ -209,6 +209,28 @@ td .sub { display: block; color: var(--muted); font-size: 11px; line-height: 1.2
 .logview { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; height: calc(100vh - 250px); min-height: 300px; overflow: auto; font: 12px/1.5 ui-monospace, Consolas, monospace; white-space: pre-wrap; word-break: break-word; margin: 0; }
 .logview .bad { color: var(--bad); } .logview .warn { color: var(--warn); }
 
+/* ---- glossary (glossary.js): marked terms, hover tip, side panel ------------------------ */
+.term { border-bottom: 1px dotted currentColor; cursor: help; text-decoration: none; }
+.term:hover, .term:focus-visible { color: var(--accent); border-bottom-color: var(--accent); outline: none; }
+.chip.term { border-bottom: 1px solid var(--line); text-decoration: none; }
+.gloss-tip b { color: var(--text); } .gloss-tip .gloss-more { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
+.gloss { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 92vw); z-index: 45; background: var(--panel); border-left: 1px solid var(--line);
+  box-shadow: -12px 0 40px #0008; padding: 18px 20px 28px; overflow-y: auto; transform: translateX(8px); transition: transform .16s ease; }
+.gloss.open { transform: none; } /* opaque from the first frame: only the small slide animates */
+.gloss-head { display: flex; align-items: flex-start; gap: 10px; }
+.gloss-head > div { flex: 1; }
+.gloss-kicker { color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .8px; }
+.gloss h2 { margin: 2px 0 0; font-size: 19px; color: var(--text); text-transform: none; letter-spacing: 0; font-weight: 650; }
+.gloss-short { font-size: 14px; margin: 10px 0 4px; }
+.gloss-body p, .gloss-box p { margin: 8px 0; line-height: 1.55; }
+.gloss-body { color: var(--text); }
+.gloss-box { border: 1px solid var(--line); border-left-width: 3px; border-radius: 8px; padding: 8px 12px; margin-top: 12px; background: var(--bg); }
+.gloss-box > b { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; }
+.gloss-box.ok { border-left-color: var(--accent2); } .gloss-box.ok > b { color: var(--accent2); }
+.gloss-box.warn { border-left-color: var(--warn); } .gloss-box.warn > b { color: var(--warn); }
+.gloss-rel { margin-top: 16px; } .gloss-rel > b { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+.gloss-rel > div { display: flex; flex-wrap: wrap; gap: 6px; }
+
 /* ---- roles: helper classes an app can put on any element -------------------------------- */
 body.role-standard .adminonly, body.role-guest .adminonly, body.role-guest .memberonly { display: none !important; }
 

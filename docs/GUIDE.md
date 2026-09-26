@@ -105,6 +105,29 @@ UI.init({ home: 'dashboard', nav: [{ group: 'App', items: [{ view: 'items', labe
 - App styles go in `app/renderer/app.css`; the kit's `kit.css` defines the tokens (`--bg`, `--panel`,
   `--accent`, `--c1`…`--c3`) and the eight themes.
 
+## Glossary: definitions on hover and click
+
+Load `kit/renderer/glossary.js` after `ui.js`, then add your app's terms and mark them in pages:
+
+```js
+Glossary.add({
+  queue: { term: 'Queue', short: 'Jobs waiting to run.',                     // the hover line
+           long: 'Paragraphs separated by a blank line. [[load]] links a term; [[load|label]] too.',
+           healthy: 'Usually empty.', fix: 'What to do when it is not.',      // the two coloured boxes
+           related: ['load'] },                                              // chips at the bottom
+});
+tile('', UI.term('queue', 'Queue'), n)            // labels, headings, sentences: anywhere HTML goes
+```
+
+A marked term gets a dotted underline. Hovering shows the one-line `short`; clicking (or Enter,
+or a tap on a phone) opens a side panel with the whole entry, and related terms open in the same
+panel. Esc, a click outside, or changing page closes it. The kit ships entries for the words on
+its own System and Security pages (`cpu`, `load`, `memory`, `swap`, `soc-temp`, `throttling`,
+`disk`, `session`, `two-factor`, `lan-only`, …); an app's entry with the same key replaces the
+kit's. Text is escaped; the only markup is `[[key]]`, `[[key|label]]`, `**bold**` and blank-line
+paragraphs. `UI.term` of an unknown key renders plain text, so a typo never breaks a page, and
+without `glossary.js` loaded the kit pages fall back to plain labels.
+
 ## Cards and the dashboard
 
 `Cards.number / bars / donut / trend / series / columns` return HTML; hover details come from

@@ -54,6 +54,7 @@ kit/electron/shell.js   createDesktopShell({ app, createService, rootDir, window
 kit/renderer/ui.js      window.UI: $, esc, tile, makeTable, searchToolbar, toast, modals, router, nav, pills, pages.*, sections.*
 kit/renderer/dash.js    window.Dash: mount({ catalog, defaults, load, guest, prefKey }), render, editing()
 kit/renderer/cards.js   window.Cards: number, bars, donut, trend, series, columns, colorFor, configure
+kit/renderer/glossary.js window.Glossary: add, term (also UI.term), open, close, all; kit terms for its own pages
 kit/renderer/webbridge.js  builds window.api from window.API_SHAPE for the web; kit/electron/preload.js does the same over IPC
 app/                    the starter app: app.json, main/service.js, server/server.js, electron/main.js, renderer/*
 ```
@@ -65,10 +66,10 @@ app/                    the starter app: app.json, main/service.js, server/serve
 | `kit/main/` | `db.js` (Db: schema, migrations with backup, kv, jobs), `settings.js`, `csv.js`, `notify.js` (webhook + SMTP), `sysmon.js`, `zip.js`, `core.js` |
 | `kit/server/` | `security.js` (users, sessions, lockout, TOTP, prefs, audit), `totp.js`, `shell.js` (the HTTP server) |
 | `kit/electron/` | `shell.js`, `preload.js` (`expose(shape, name)`), `updater.js` |
-| `kit/renderer/` | `kit.css` (tokens, eight themes, all layout), `ui.js`, `cards.js`, `dash.js`, `webbridge.js`, `theme.js`, `qr.js` |
+| `kit/renderer/` | `kit.css` (tokens, eight themes, all layout), `ui.js`, `cards.js`, `dash.js`, `glossary.js`, `webbridge.js`, `theme.js`, `qr.js` |
 | `kit/python/` | `bracket_fastapi.py`: the same contract and kit channels for a FastAPI backend |
 | `kit/ops/` | `pack-server.js` (release tarball + sha256), `caddy-site.txt` |
-| `kit/test/` | `contract.js` (bridge ⇄ handlers ⇄ events), `kit.test.js` |
+| `kit/test/` | `contract.js` (bridge ⇄ handlers ⇄ events), `kit.test.js`, `glossary.test.js` |
 | `app/` | the starter app; `app/test/app.test.js` runs the contract for it |
 | `server/install.sh` | Pi installer with `__NAME__`/`__SLUG__`/`__PORT__`/`__GITHUB__` placeholders that `new-app.js` fills |
 | `tools/` | `new-app.js`, `kit-upgrade.js`, `make-icon.js` |
@@ -123,6 +124,12 @@ the same way; nothing in it may require Electron or `http`.
   throws "Path must be absolute"; the shell resolves it against the working directory.
 - **`ALTER TABLE ... ADD COLUMN` in a migration must tolerate "duplicate column"** (a migration
   that half-applied before a crash). `Db.migrate` swallows exactly that error, nothing else.
+- **The glossary panel must not wait for an animation frame.** Opening it with
+  `requestAnimationFrame(() => add('open'))` plus an opacity fade left it invisible in a tab that
+  was not painting (rAF never fires, the transition never advances). It forces a layout and adds
+  `.open` synchronously, and the panel is opaque from the first frame; only the slide animates.
+- **Arrays from a `vm` context fail `assert.deepStrictEqual` against `[]`** (different realm, so
+  a different `Array.prototype`). glossary.test.js compares lengths instead.
 - **Electron and `electron-updater` are the only dependencies and only for the desktop shell.**
   `npm install` is not needed for tests or the web shell; CI's test job runs without it.
 - **`x_*` UniFi-style secret fields never reach storage.** Apps that snapshot third-party config

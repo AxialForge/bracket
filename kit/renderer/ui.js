@@ -31,6 +31,8 @@
   const fmtMs = (v) => v == null ? '—' : `${Math.round(Number(v) * 10) / 10} ms`;
   const fmtRate = (bps) => bps == null ? '—' : bps >= 1e6 ? (bps / 1e6).toFixed(1) + ' MB/s' : (bps / 1e3).toFixed(0) + ' kB/s';
   const sevClass = (s) => (s === 'HIGH' || s === 'CRITICAL' ? 'bad' : s === 'MEDIUM' ? 'warn' : '');
+  // A glossary term when glossary.js is loaded (it replaces UI.term), plain text otherwise.
+  const T = (key, text) => (window.Glossary ? window.Glossary.term(key, text) : esc(text));
   const PALETTE = ['var(--accent)', 'var(--accent2)', 'var(--warn)', 'var(--c2)', 'var(--c3)', 'var(--bad)', 'var(--c1)', 'var(--muted)'];
   const store = { get: (k, d) => { try { const v = localStorage.getItem(`${APP.slug || 'bracket'}.${k}`); return v == null ? d : v; } catch { return d; } }, set: (k, v) => { try { localStorage.setItem(`${APP.slug || 'bracket'}.${k}`, v); } catch { /* blocked */ } } };
 
@@ -183,9 +185,9 @@
           <div class="field"><label>Repeat</label><input type="password" id="pwNew2" autocomplete="new-password"></div>
           <div class="inline"><button class="primary" id="pwChange">Change password</button><span class="muted tiny">Signs out every other session.</span></div>
           <h3 style="margin-top:16px">Options</h3>
-          <div class="field"><label>LAN only</label><input type="checkbox" id="optLan" ${st.lanOnly ? 'checked' : ''}><div class="hint">Refuse connections from outside private address ranges. Leave on unless you know why.</div></div>
+          <div class="field"><label>${T('lan-only', 'LAN only')}</label><input type="checkbox" id="optLan" ${st.lanOnly ? 'checked' : ''}><div class="hint">Refuse connections from outside private address ranges. Leave on unless you know why.</div></div>
           <div class="field"><label>Idle sign-out</label><div class="inline"><input type="number" id="optIdle" min="0" max="10080" value="${st.idleMinutes}" style="width:90px"> <span class="muted">minutes (0 = off)</span><button class="small" id="optIdleSave">Save</button></div></div>
-          <div class="field"><label>Guest access</label><input type="checkbox" id="optGuest" ${st.guestEnabled ? 'checked' : ''}><div class="hint">Anyone on the LAN can open the pages the guest role allows without signing in.</div></div>
+          <div class="field"><label>${T('guest', 'Guest access')}</label><input type="checkbox" id="optGuest" ${st.guestEnabled ? 'checked' : ''}><div class="hint">Anyone on the LAN can open the pages the guest role allows without signing in.</div></div>
           ${st.guestEnabled && window.qrSvg ? `<div class="field"><label>Guest link</label><div class="inline" style="align-items:flex-start;gap:14px"><div class="qrbox">${window.qrSvg(location.origin + '/', { size: 132, label: 'Guest link' })}</div><div class="muted tiny">Scan to open <span class="mono">${esc(location.origin)}</span> on a phone.</div></div></div>` : ''}
           <div class="inline"><button id="optSave">Save options</button></div>
           <h3 style="margin-top:16px">Users</h3>
@@ -193,7 +195,7 @@
           <div class="inline" style="margin-top:8px"><input type="text" id="nuName" placeholder="username" style="width:130px" autocomplete="off"><input type="password" id="nuPw" placeholder="password (8+)" style="width:150px" autocomplete="new-password"><select id="nuRole"><option value="standard">standard</option><option value="admin">admin</option></select><button class="primary" id="nuAdd">Add user</button></div>
           <p class="muted tiny" style="margin:6px 0 0"><b>admin</b>: everything. <b>standard</b>: ${esc(config.standardRoleText || 'every page read-only, their own password and preferences; no settings, no security.')}</p>
         </div>
-        <div class="card"><h3>Two-factor codes ${st.totpEnabled ? '<span class="right ok">on</span>' : '<span class="right muted">off</span>'}</h3>
+        <div class="card"><h3>${T('two-factor', 'Two-factor codes')}&nbsp;${st.totpEnabled ? '<span class="right ok">on</span>' : '<span class="right muted">off</span>'}</h3>
           ${st.totpEnabled
             ? `<p>Sign-in requires your password and a 6-digit code from your authenticator app.</p><div class="field"><label>Password</label><input type="password" id="totpPw"></div><div class="inline"><button class="danger" id="totpOff">Turn off 2FA</button></div>`
             : `<p class="muted">Adds a code from Google Authenticator, Aegis, Bitwarden, 1Password or any TOTP app. Even a leaked password then cannot sign in.</p><div id="totpBox"><button class="primary" id="totpStart">Set up 2FA</button></div>`}
@@ -207,7 +209,7 @@
             <b>Windows</b>: download it, double-click the .crt → Install Certificate → Local Machine → Place all certificates in the following store → <i>Trusted Root Certification Authorities</i>. Restart the browser.<br>
             <b>Android</b>: Settings → Security → Encryption &amp; credentials → Install a certificate → <i>CA certificate</i> → pick the file.<br>
             <b>iPhone / iPad</b>: open the download in Safari, allow the profile, install it under Settings → General → VPN &amp; Device Management, then switch it on under General → About → Certificate Trust Settings.</div></details>`}
-          <h3 style="margin-top:16px">Sessions</h3>
+          <h3 style="margin-top:16px">${T('session', 'Sessions')}</h3>
           <table><thead><tr><th>User</th><th>Where</th><th>Browser</th><th>Last seen</th><th></th></tr></thead><tbody>${st.sessions.map(s => `<tr><td>${esc(s.user || '')} <span class="muted tiny">${esc(s.role || '')}</span></td><td>${esc(s.ip || '')}${s.current ? ' <span class="badge ok">this</span>' : ''}</td><td class="muted tiny" title="${esc(s.ua)}">${esc((s.ua || '').replace(/^Mozilla\/5\.0 /, '').slice(0, 48))}</td><td>${ago(s.lastSeen)}</td><td>${s.current ? '' : `<button class="small revoke" data-id="${s.id}">Sign out</button>`}</td></tr>`).join('')}</tbody></table>
           <div class="inline" style="margin-top:8px"><button id="revokeOthers" ${st.sessions.length > 1 ? '' : 'disabled'}>Sign out other sessions</button><button id="logoutBtn">Sign out here</button></div>
         </div>
@@ -243,19 +245,19 @@
     const health = s.health || { level: 'ok', reasons: [] };
     setPill('sysPill', health.level === 'ok' ? null : (health.level === 'bad' ? '!' : '•'), health.level === 'bad' ? 'bad' : 'warn');
     const pi = s.pi;
-    const tempTile = pi && pi.tempC != null ? tile(pi.tempC >= 80 ? 'badt' : pi.tempC >= 70 ? 'warnt' : '', 'SoC temperature', `${pi.tempC.toFixed(1)} °C`, `${pi.clockMHz ? pi.clockMHz + ' MHz' : ''}${pi.voltage ? ' · ' + pi.voltage.toFixed(2) + ' V' : ''}`) : '';
+    const tempTile = pi && pi.tempC != null ? tile(pi.tempC >= 80 ? 'badt' : pi.tempC >= 70 ? 'warnt' : '', T('soc-temp', 'SoC temperature'), `${pi.tempC.toFixed(1)} °C`, `${pi.clockMHz ? pi.clockMHz + ' MHz' : ''}${pi.voltage ? ' · ' + pi.voltage.toFixed(2) + ' V' : ''}`) : '';
     const thr = pi && pi.throttled;
-    const thrTile = thr ? tile(thr.now ? 'badt' : thr.ever ? 'warnt' : 'okt', 'Power & throttling', thr.now ? 'Throttled now' : thr.ever ? 'Throttled earlier' : 'Healthy', thr.flags.length ? esc(thr.flags.join(' · ')) : 'no under-voltage or frequency capping since boot') : '';
+    const thrTile = thr ? tile(thr.now ? 'badt' : thr.ever ? 'warnt' : 'okt', T('throttling', 'Power & throttling'), thr.now ? 'Throttled now' : thr.ever ? 'Throttled earlier' : 'Healthy', thr.flags.length ? esc(thr.flags.join(' · ')) : 'no under-voltage or frequency capping since boot') : '';
     const dataDisk = s.disks[0];
     v.innerHTML = `<h1>System</h1>
-      <p class="muted">${esc(s.host.hostname)} · ${esc(pi ? pi.model : s.host.platform)} · up ${fmtUptime(s.host.uptimeS)} · ${esc(APP.name || 'service')} up ${fmtUptime(s.service.uptimeS)} · refreshes every ${Math.round(s.sampleMs / 1000)} s</p>
+      <p class="muted">${esc(s.host.hostname)} · ${esc(pi ? pi.model : s.host.platform)} · ${T('uptime', 'up')} ${fmtUptime(s.host.uptimeS)} · ${esc(APP.name || 'service')} up ${fmtUptime(s.service.uptimeS)} · refreshes every ${Math.round(s.sampleMs / 1000)} s</p>
       <div class="tiles">
-        ${tile(health.level === 'ok' ? 'okt' : health.level + 't', 'Health', `<span class="health-${health.level}">${health.level === 'ok' ? 'All good' : health.level === 'warn' ? 'Attention' : 'Problem'}</span>`, health.reasons.length ? esc(health.reasons.join(' · ')) : 'no rule triggered')}
+        ${tile(health.level === 'ok' ? 'okt' : health.level + 't', T('health', 'Health'), `<span class="health-${health.level}">${health.level === 'ok' ? 'All good' : health.level === 'warn' ? 'Attention' : 'Problem'}</span>`, health.reasons.length ? esc(health.reasons.join(' · ')) : 'no rule triggered')}
         ${tempTile}${thrTile}
-        ${tile('', 'CPU', s.cpu.pct == null ? '…' : `${s.cpu.pct}%`, `${s.cpu.cores} cores · load ${s.cpu.load.join(' / ')}`)}
-        ${tile('', 'Memory', `${s.memory.pct}%`, `${fmtBytes(s.memory.used)} of ${fmtBytes(s.memory.total)}${s.memory.swap ? ` · swap ${fmtBytes(s.memory.swap.used)}` : ''}`)}
-        ${tile(dataDisk.ok ? (dataDisk.pct >= 92 ? 'badt' : dataDisk.pct >= 80 ? 'warnt' : '') : 'badt', 'Data disk', dataDisk.ok ? `${dataDisk.pct}%` : 'unreadable', dataDisk.ok ? `${fmtBytes(dataDisk.free)} free · database ${fmtBytes(s.service.dbBytes || 0)}` : esc(dataDisk.error || ''))}
-        ${tile('', 'Network', s.network.rate ? `↓ ${fmtRate(s.network.rate.rxBps)}` : (s.network.interfaces[0] ? esc(s.network.interfaces[0].address) : '—'), s.network.rate ? `↑ ${fmtRate(s.network.rate.txBps)} · ${esc(s.network.interfaces.map(i => `${i.name} ${i.address}`).join(', '))}` : esc(s.network.interfaces.map(i => i.name).join(', ')))}
+        ${tile('', T('cpu', 'CPU'), s.cpu.pct == null ? '…' : `${s.cpu.pct}%`, `${s.cpu.cores} ${T('cores', 'cores')} · ${T('load', 'load')} ${s.cpu.load.join(' / ')}`)}
+        ${tile('', T('memory', 'Memory'), `${s.memory.pct}%`, `${fmtBytes(s.memory.used)} of ${fmtBytes(s.memory.total)}${s.memory.swap ? ` · swap ${fmtBytes(s.memory.swap.used)}` : ''}`)}
+        ${tile(dataDisk.ok ? (dataDisk.pct >= 92 ? 'badt' : dataDisk.pct >= 80 ? 'warnt' : '') : 'badt', T('disk', 'Data disk'), dataDisk.ok ? `${dataDisk.pct}%` : 'unreadable', dataDisk.ok ? `${fmtBytes(dataDisk.free)} free · database ${fmtBytes(s.service.dbBytes || 0)}` : esc(dataDisk.error || ''))}
+        ${tile('', T('network', 'Network'), s.network.rate ? `↓ ${fmtRate(s.network.rate.rxBps)}` : (s.network.interfaces[0] ? esc(s.network.interfaces[0].address) : '—'), s.network.rate ? `↑ ${fmtRate(s.network.rate.txBps)} · ${esc(s.network.interfaces.map(i => `${i.name} ${i.address}`).join(', '))}` : esc(s.network.interfaces.map(i => i.name).join(', ')))}
       </div>
       <div class="grid2">
         <div class="card"><h3>CPU <span class="right">${s.cpu.pct == null ? '' : s.cpu.pct + '%'}</span></h3>${sparkline(last('cpu'), { max: 100 })}<div class="cores">${(s.cpu.perCore || []).map(p => `<div title="${p}%"><div style="height:${p}%"></div></div>`).join('')}</div><div class="muted tiny" style="margin-top:6px">${esc(s.cpu.model || '')}</div></div>
@@ -359,5 +361,5 @@
     api().appInfo().then(i => { const vl = $('#versionLine'); if (vl) vl.textContent = `v${i.version}`; }).catch(() => {});
   }
 
-  window.UI = { $, $$, esc, el, fmtN, fmtBytes, fmtGB, fmtDate, fmtTime, fmtAgo, fmtIn, fmtUptime, fmtMs, fmtRate, sevClass, PALETTE, store, toast, openModal, closeModal, makeTable, searchToolbar, tile, linkTile, sparkline, meter, RANGE_LABEL, rangePicker, alignSeries, THEMES, applyTheme, currentTheme, views, pages, sections, route, setPill, closeNav, init, me: () => me, isAdmin, isGuest, current: () => currentView, api, view };
+  window.UI = { term: T, $, $$, esc, el, fmtN, fmtBytes, fmtGB, fmtDate, fmtTime, fmtAgo, fmtIn, fmtUptime, fmtMs, fmtRate, sevClass, PALETTE, store, toast, openModal, closeModal, makeTable, searchToolbar, tile, linkTile, sparkline, meter, RANGE_LABEL, rangePicker, alignSeries, THEMES, applyTheme, currentTheme, views, pages, sections, route, setPill, closeNav, init, me: () => me, isAdmin, isGuest, current: () => currentView, api, view };
 })();
