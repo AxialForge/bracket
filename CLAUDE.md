@@ -31,6 +31,7 @@ vendor `kit/` and replace it whole when a newer kit is out.
 
 ```bash
 npm test                          # kit tests + the starter app's contract and handler tests (plain node)
+python kit/python/test_bracket_fastapi.py   # the FastAPI adapter (needs fastapi + httpx; not run by CI)
 npm run dev                       # the starter app on http://localhost:8090, data in ./.devdata
 node app/server/server.js --data=.devdata --set-password
 npm install && npm start          # desktop shell (Electron)

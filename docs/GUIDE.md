@@ -138,6 +138,7 @@ it guest-safe in a `webHandlers` override.
 `kit/python/bracket_fastapi.py` speaks the same contract from FastAPI: mount it, register handlers
 with `@bk.handler('items:list')`, push events with `bk.send(...)`, and serve the same `app/renderer`
 files. Two-factor codes and the self-signed HTTPS switch are not available there; put Caddy in front.
+`python kit/python/test_bracket_fastapi.py` exercises the whole contract (needs `fastapi` and `httpx`).
 
 ## Upgrading the kit
 
